@@ -1,3 +1,3 @@
 package token
 
-const val TOKEN = "NzI2MTUxNTUzMDAxNzE3ODI4.XwixFw.eUceh5fUWP9y7PatT1xsoquWMzo"
+const val TOKEN = "NzI2MTUxNTUzMDAxNzE3ODI4.XwjDHw.NDWN-ktclugZmHCl1C8SttOUDUk"
