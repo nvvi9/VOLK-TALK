@@ -45,11 +45,10 @@ object Quotes {
 
     @ExperimentalStdlibApi
     val quote: String?
-        get() =
-            quotes.randomOrNull()?.also {
-                quotes.remove(it)
-                quotesChangeObserver?.invoke(quotes.size)
-            }
+        get() = quotes.randomOrNull()?.also {
+            quotes.remove(it)
+            quotesChangeObserver?.invoke(quotes.size)
+        }
 
 
     private var quotesChangeObserver: QuoteSizeObserver? = null

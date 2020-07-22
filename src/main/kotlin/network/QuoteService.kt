@@ -5,20 +5,18 @@ import kotlinx.coroutines.Deferred
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Url
 
-private const val BASE_URL = "https://neurovolk.xyz/"
 
 private val retrofit = Retrofit.Builder()
     .addConverterFactory(ScalarsConverterFactory.create())
     .addCallAdapterFactory(CoroutineCallAdapterFactory())
-    .baseUrl(BASE_URL)
+    .baseUrl("https://neurovolk.xyz/")
     .build()
 
 
 interface QuoteService {
-    @GET
-    suspend fun getQuote(@Url url: String = BASE_URL): String
+    @GET(".")
+    suspend fun getQuote(): String
 
     @GET("img")
     fun getImageQuoteAsync(): Deferred<String>
