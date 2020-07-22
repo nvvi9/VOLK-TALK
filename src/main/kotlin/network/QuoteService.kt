@@ -18,7 +18,7 @@ private val retrofit = Retrofit.Builder()
 
 interface QuoteService {
     @GET
-    fun getQuoteAsync(@Url url: String = BASE_URL): Deferred<String>
+    suspend fun getQuote(@Url url: String = BASE_URL): String
 
     @GET("img")
     fun getImageQuoteAsync(): Deferred<String>
