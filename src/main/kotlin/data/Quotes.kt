@@ -50,14 +50,11 @@ object Quotes {
             quotesChangeObserver?.invoke(quotes.size)
         }
 
-
     private var quotesChangeObserver: QuoteSizeObserver? = null
 
     fun addQuote(quote: String) {
-        synchronized(quotes) {
-            if (quotes.size < MAX_QUOTES_SIZE) {
-                quotes.add(quote)
-            }
+        if (quotes.size < MAX_QUOTES_SIZE) {
+            quotes.add(quote)
         }
     }
 

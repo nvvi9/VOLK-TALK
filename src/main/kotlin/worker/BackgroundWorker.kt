@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import repository.QuoteRepository
 
 
@@ -16,6 +18,7 @@ object BackgroundWorker {
     private var job: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private val repository = QuoteRepository()
+    private val mutex = Mutex()
 
     fun initialize() {
         Quotes.setQuoteObserver { size ->
@@ -30,6 +33,6 @@ object BackgroundWorker {
         (1..amount).asFlow()
             .flatMapMerge(amount) { repository.extractQuoteFlow() }
             .flowOn(Dispatchers.IO)
-            .collect { it?.let { Quotes.addQuote(it) } }
+            .collect { it?.let { mutex.withLock { Quotes.addQuote(it) } } }
     }
 }
