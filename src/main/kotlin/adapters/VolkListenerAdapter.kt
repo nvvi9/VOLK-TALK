@@ -2,7 +2,10 @@ package adapters
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.launch
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import player.AudioPlayer
@@ -18,8 +21,23 @@ class VolkListenerAdapter : ListenerAdapter() {
     private val audioPlayer = AudioPlayer()
     private val quoteRepository = QuoteRepository()
     private val commands = mutableMapOf<String, MessageReceivedEvent>()
+    private val channel = Channel<Pair<String, GuildMessageReceivedEvent>>(UNLIMITED)
 
     init {
+        setCommands()
+        initReceiving()
+    }
+
+    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+        event.takeIf { !it.author.isBot && it.message.contentRaw.startsWith('*') }?.let {
+            coroutineScope.launch {
+                channel.send(it.message.contentRaw.toLowerCase() to it)
+            }
+        }
+        super.onGuildMessageReceived(event)
+    }
+
+    private fun setCommands() {
         commands["*базарь"] = { event ->
             val quote = quoteRepository.getQuoteAsync()
             val voiceChannel = event.member?.voiceState?.channel
@@ -43,21 +61,21 @@ class VolkListenerAdapter : ListenerAdapter() {
             }
         }
         commands["*подсоби"] = { event ->
-            event.channel.sendMessage(quoteRepository.getHelpEmbedded()).queue()
+            event.channel.sendMessage(quoteRepository.getHelpEmbedAsync().await()).queue()
         }
     }
 
-    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
-        event.takeIf { !it.author.isBot && it.message.contentRaw.startsWith('*') }?.let {
-            coroutineScope.launch {
-                commands.getOrDefault(it.message.contentRaw.toLowerCase()) {
+    private fun initReceiving() {
+        coroutineScope.launch {
+            for (request in channel) {
+                commands.getOrDefault(request.first) {
                     it.channel.apply {
+                        val helpMessage = quoteRepository.getHelpEmbedAsync()
                         sendMessage("<@${it.author.id}>, ${quoteRepository.getWrongCommandAnswer()}").queue()
-                        sendMessage(quoteRepository.getHelpEmbedded()).queue()
+                        sendMessage(helpMessage.await()).queue()
                     }
-                }.invoke(it)
+                }.invoke(request.second)
             }
         }
-        super.onGuildMessageReceived(event)
     }
 }

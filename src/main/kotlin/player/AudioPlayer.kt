@@ -20,7 +20,6 @@ class AudioPlayer {
 
     private val audioManagers: MutableMap<Long, GuildAudioManager> = HashMap()
 
-    @Synchronized
     fun loadAndPlay(channel: TextChannel, audioUri: String) {
         val audioManager = getGuildAudioManager(channel.guild)
 

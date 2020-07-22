@@ -19,7 +19,7 @@ interface QuoteService {
     suspend fun getQuote(): String
 
     @GET("img")
-    fun getImageQuoteAsync(): Deferred<String>
+    suspend fun getImageQuote(): String
 }
 
 

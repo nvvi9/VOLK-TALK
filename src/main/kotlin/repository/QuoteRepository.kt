@@ -7,8 +7,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.EmbedBuilder
+import network.QuoteService
 import network.Service
+import utils.imageUri
 import utils.quote
+import java.awt.Color
 
 
 class QuoteRepository {
@@ -19,13 +22,6 @@ class QuoteRepository {
             async {
                 Quotes.quote ?: withContext(Dispatchers.IO) { extractQuote() }
             }
-        }
-
-    private suspend fun extractQuote() =
-        try {
-            Service.retrofitService.getQuote().quote
-        } catch (t: Throwable) {
-            null
         }
 
     fun extractQuoteFlow() = flow {
@@ -44,6 +40,21 @@ class QuoteRepository {
     fun getRejectDisconnectMessage() =
         Quotes.rejectDisconnectionMessage
 
-    fun getHelpEmbedded() =
-        EmbedBuilder().setDescription(Quotes.helpText).build()
+    suspend fun getHelpEmbedAsync() =
+        coroutineScope {
+            async {
+                EmbedBuilder()
+                    .setDescription(Quotes.helpText)
+                    .setImage(Quotes.imageUri)
+                    .setColor(Color.CYAN)
+                    .build()
+            }
+        }
+
+    private suspend fun extractQuote() =
+        try {
+            Service.retrofitService.getQuote().quote
+        } catch (t: Throwable) {
+            null
+        }
 }
