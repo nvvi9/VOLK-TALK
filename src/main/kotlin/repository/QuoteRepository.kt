@@ -5,10 +5,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.EmbedBuilder
-import network.QuoteService
-import network.Service
+import network.RetrofitService
 import utils.imageUri
 import utils.quote
 import java.awt.Color
@@ -17,16 +17,14 @@ import java.awt.Color
 class QuoteRepository {
 
     @ExperimentalStdlibApi
-    suspend fun getQuoteAsync() =
+    suspend fun getQuote() =
         coroutineScope {
-            async {
-                Quotes.quote ?: withContext(Dispatchers.IO) { extractQuote() }
-            }
+            Quotes.quote ?: extractQuote()
         }
 
     fun extractQuoteFlow() = flow {
         emit(extractQuote())
-    }
+    }.flowOn(Dispatchers.IO)
 
     fun getWrongCommandAnswer() =
         Quotes.wrongCommandAnswer
@@ -51,10 +49,13 @@ class QuoteRepository {
             }
         }
 
+    @Suppress("BlockingMethodInNonBlockingContext")
     private suspend fun extractQuote() =
-        try {
-            Service.retrofitService.getQuote().quote
-        } catch (t: Throwable) {
-            null
+        withContext(Dispatchers.IO) {
+            try {
+                RetrofitService.quoteService.getQuote().string().quote
+            } catch (t: Throwable) {
+                null
+            }
         }
 }

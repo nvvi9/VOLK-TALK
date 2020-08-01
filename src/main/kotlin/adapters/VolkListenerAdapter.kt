@@ -2,13 +2,13 @@ package adapters
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.launch
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import player.AudioPlayer
+import player.VolkAudioPlayer
 import repository.QuoteRepository
 import utils.MessageReceivedEvent
 import java.util.*
@@ -17,52 +17,40 @@ import java.util.*
 @ExperimentalStdlibApi
 class VolkListenerAdapter : ListenerAdapter() {
 
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private val audioPlayer = AudioPlayer()
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private val volkAudioPlayer = VolkAudioPlayer()
     private val quoteRepository = QuoteRepository()
-    private val commands = mutableMapOf<String, MessageReceivedEvent>()
     private val channel = Channel<Pair<String, GuildMessageReceivedEvent>>(UNLIMITED)
-
-    init {
-        setCommands()
-        initReceiving()
-    }
-
-    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
-        event.takeIf { !it.author.isBot && it.message.contentRaw.startsWith('*') }?.let {
-            coroutineScope.launch {
-                channel.send(it.message.contentRaw.toLowerCase() to it)
-            }
-        }
-        super.onGuildMessageReceived(event)
-    }
-
-    private fun setCommands() {
-        commands["*базарь"] = { event ->
-            val quote = quoteRepository.getQuoteAsync()
+    private val commands = mutableMapOf<String, MessageReceivedEvent>(
+        "базарь" to { event ->
+            val quote = coroutineScope.async { quoteRepository.getQuote() }
             val voiceChannel = event.member?.voiceState?.channel
-
             voiceChannel?.let {
                 event.guild.audioManager.openAudioConnection(it)
-                audioPlayer.loadAndPlay(event.channel, quoteRepository.getSongUri())
+                volkAudioPlayer.loadAndPlay(event.channel, quoteRepository.getSongUri())
             }
+
             event.channel.sendMessage(quote.await() ?: quoteRepository.getRejectDisconnectMessage()).queue()
-        }
-        commands["*уйди"] = { event ->
+        },
+        "уйди" to { event ->
             event.apply {
                 if (guild.selfMember.voiceState?.channel == null || Random().nextBoolean()) {
                     guild.audioManager.closeAudioConnection()
                     channel.sendMessage(quoteRepository.getLeaveVoiceChannelMessage()).queue()
                 } else {
-                    audioPlayer.loadAndPlay(channel, quoteRepository.getSongUri())
+                    volkAudioPlayer.loadAndPlay(channel, quoteRepository.getSongUri())
                     channel.sendMessage("${quoteRepository.getRejectDisconnectMessage()} <@${author.id}>")
                         .queue()
                 }
             }
-        }
-        commands["*подсоби"] = { event ->
+        },
+        "подсоби" to { event ->
             event.channel.sendMessage(quoteRepository.getHelpEmbedAsync().await()).queue()
         }
+    )
+
+    init {
+        initReceiving()
     }
 
     private fun initReceiving() {
@@ -77,5 +65,18 @@ class VolkListenerAdapter : ListenerAdapter() {
                 }.invoke(request.second)
             }
         }
+    }
+
+    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+        event.takeUnless {
+            it.author.isBot
+        }?.message?.contentRaw?.replace(" ", "")?.takeIf {
+            it.startsWith('*')
+        }?.removePrefix("*")?.let {
+            coroutineScope.launch {
+                channel.send(it to event)
+            }
+        }
+        super.onGuildMessageReceived(event)
     }
 }

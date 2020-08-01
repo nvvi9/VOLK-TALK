@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.TextChannel
 
 
-class AudioPlayer {
+class VolkAudioPlayer {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager().also {
         AudioSourceManagers.registerLocalSource(it)
