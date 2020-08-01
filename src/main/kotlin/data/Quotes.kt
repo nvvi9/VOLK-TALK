@@ -1,6 +1,7 @@
 package data
 
-import utils.QuoteSizeObserver
+
+private typealias QuoteSizeObserver = ((currentSize: Int) -> Unit)
 
 object Quotes {
 

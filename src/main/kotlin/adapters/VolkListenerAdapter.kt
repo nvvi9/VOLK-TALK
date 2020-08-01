@@ -10,9 +10,10 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import player.VolkAudioPlayer
 import repository.QuoteRepository
-import utils.MessageReceivedEvent
 import java.util.*
 
+
+private typealias MessageReceivedEvent = suspend (GuildMessageReceivedEvent) -> Unit
 
 @ExperimentalStdlibApi
 class VolkListenerAdapter : ListenerAdapter() {

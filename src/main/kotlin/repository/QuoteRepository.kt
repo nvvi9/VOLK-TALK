@@ -9,8 +9,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.EmbedBuilder
 import network.RetrofitService
-import utils.imageUri
-import utils.quote
 import java.awt.Color
 
 
@@ -53,9 +51,13 @@ class QuoteRepository {
     private suspend fun extractQuote() =
         withContext(Dispatchers.IO) {
             try {
-                RetrofitService.quoteService.getQuote().string().quote
+                RetrofitService.quoteService.getQuote().string().asQuote()
             } catch (t: Throwable) {
                 null
             }
         }
+
+    private fun String.asQuote() = substringAfter("<div class=\"text\">")
+        .substringBefore("</div><a class=")
+        .takeIf { it.isNotEmpty() }
 }
