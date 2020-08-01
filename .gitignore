@@ -4,6 +4,4 @@ local.properties
 .idea
 *.iml
 /src/main/kotlin/token/
-/build/classes/
-/build/kotlin/
-/build/tmp/
+/build/
