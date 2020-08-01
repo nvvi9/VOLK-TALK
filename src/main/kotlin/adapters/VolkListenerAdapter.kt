@@ -70,7 +70,7 @@ class VolkListenerAdapter : ListenerAdapter() {
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         event.takeUnless {
             it.author.isBot
-        }?.message?.contentRaw?.replace(" ", "")?.takeIf {
+        }?.message?.contentRaw?.replace(" ", "")?.toLowerCase()?.takeIf {
             it.startsWith('*')
         }?.removePrefix("*")?.let {
             coroutineScope.launch {
