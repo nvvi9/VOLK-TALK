@@ -23,7 +23,7 @@ class VolkListenerAdapter : ListenerAdapter() {
     private val quoteRepository = QuoteRepository()
     private val channel = Channel<Pair<String, GuildMessageReceivedEvent>>(UNLIMITED)
     private val commands = mutableMapOf<String, MessageReceivedEvent>(
-        "базарь" to { event ->
+        "мысль" to { event ->
             val quote = coroutineScope.async { quoteRepository.getQuote() }
             val voiceChannel = event.member?.voiceState?.channel
             voiceChannel?.let {
