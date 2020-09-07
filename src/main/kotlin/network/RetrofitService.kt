@@ -3,7 +3,6 @@ package network
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
-
 object RetrofitService {
 
     private val okHttpClient = OkHttpClient.Builder()

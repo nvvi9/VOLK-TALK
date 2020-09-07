@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.EmbedBuilder
 import network.RetrofitService
 import java.awt.Color
 
-
 class QuoteRepository {
 
     @ExperimentalStdlibApi
@@ -41,7 +40,6 @@ class QuoteRepository {
             async {
                 EmbedBuilder()
                     .setDescription(Quotes.helpText)
-                    .setImage(Quotes.imageUri)
                     .setColor(Color.CYAN)
                     .build()
             }

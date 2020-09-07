@@ -10,7 +10,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.TextChannel
 
-
 class VolkAudioPlayer {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager().also {
@@ -23,32 +22,36 @@ class VolkAudioPlayer {
     fun loadAndPlay(channel: TextChannel, audioUri: String) {
         val audioManager = getGuildAudioManager(channel.guild)
 
-        playerManager.loadItemOrdered(audioManager, audioUri, object : AudioLoadResultHandler {
+        playerManager.loadItemOrdered(
+            audioManager,
+            audioUri,
+            object : AudioLoadResultHandler {
 
-            override fun loadFailed(exception: FriendlyException?) {
-                println("Load failed: ${exception?.message}")
-            }
+                override fun loadFailed(exception: FriendlyException?) {
+                    println("Load failed: ${exception?.message}")
+                }
 
-            override fun trackLoaded(track: AudioTrack?) {
-                track?.let {
-                    println("Adding to queue: ${track.info?.title}")
-                    audioManager.scheduler.queue(it)
+                override fun trackLoaded(track: AudioTrack?) {
+                    track?.let {
+                        println("Adding to queue: ${track.info?.title}")
+                        audioManager.scheduler.queue(it)
+                    }
+                }
+
+                override fun noMatches() {
+                    channel.sendMessage("Nothing found").queue()
+                }
+
+                override fun playlistLoaded(playlist: AudioPlaylist?) {
+                    val firstTrack = playlist?.selectedTrack ?: playlist?.tracks?.get(0)
+
+                    firstTrack?.let {
+                        println("Adding to queue ${it.info.title}")
+                        audioManager.scheduler.queue(it)
+                    }
                 }
             }
-
-            override fun noMatches() {
-                channel.sendMessage("Nothing found").queue()
-            }
-
-            override fun playlistLoaded(playlist: AudioPlaylist?) {
-                val firstTrack = playlist?.selectedTrack ?: playlist?.tracks?.get(0)
-
-                firstTrack?.let {
-                    println("Adding to queue ${it.info.title}")
-                    audioManager.scheduler.queue(it)
-                }
-            }
-        })
+        )
     }
 
     @Synchronized

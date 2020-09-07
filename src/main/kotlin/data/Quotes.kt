@@ -1,11 +1,10 @@
 package data
 
-
 private typealias QuoteSizeObserver = ((currentSize: Int) -> Unit)
 
 object Quotes {
 
-    const val helpText: String = "*базарь -> базарю\n*уйди -> ухожу\n*подсоби -> подсоблю"
+    const val helpText: String = "*мысль -> мыслю\n*уйди -> ухожу\n*подсоби -> подсоблю\n\nВопросы?"
 
     const val MAX_QUOTES_SIZE = 1000
 

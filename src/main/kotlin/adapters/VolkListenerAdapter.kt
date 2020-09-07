@@ -12,7 +12,6 @@ import player.VolkAudioPlayer
 import repository.QuoteRepository
 import java.util.*
 
-
 private typealias MessageReceivedEvent = suspend (GuildMessageReceivedEvent) -> Unit
 
 @ExperimentalStdlibApi
